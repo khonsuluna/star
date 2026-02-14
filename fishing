@@ -83,99 +83,132 @@ task.spawn(function()
     end
 end)
 
--- ================= GUI CLEAN DROPDOWN =================
+-- ================= CLEAN UI =================
 
 local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
 ScreenGui.Name = "AutoFishUI"
-ScreenGui.Parent = Client:WaitForChild("PlayerGui")
 
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 260, 0, 160)
-Frame.Position = UDim2.new(0, 40, 0, 120)
-Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-Frame.BorderSizePixel = 0
-Frame.Active = true
-Frame.Draggable = true
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 320, 0, 220)
+Main.Position = UDim2.new(0.5, -160, 0.5, -110)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,30)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
 
-local Corner = Instance.new("UICorner", Frame)
+local Corner = Instance.new("UICorner", Main)
 Corner.CornerRadius = UDim.new(0,12)
 
-local UIListLayout = Instance.new("UIListLayout", Frame)
-UIListLayout.Padding = UDim.new(0,8)
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(60,60,70)
+Stroke.Thickness = 1
 
--- Title
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, -20, 0, 30)
+-- Title Bar
+local TitleBar = Instance.new("Frame", Main)
+TitleBar.Size = UDim2.new(1,0,0,40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(30,30,36)
+TitleBar.BorderSizePixel = 0
+
+local TitleCorner = Instance.new("UICorner", TitleBar)
+TitleCorner.CornerRadius = UDim.new(0,12)
+
+local Title = Instance.new("TextLabel", TitleBar)
+Title.Size = UDim2.new(1,-40,1,0)
+Title.Position = UDim2.new(0,15,0,0)
 Title.Text = "Auto Fish"
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.new(1,1,1)
+Title.TextColor3 = Color3.fromRGB(220,220,220)
 Title.TextSize = 18
+Title.Font = Enum.Font.GothamSemibold
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Start/Stop Button
-local ToggleButton = Instance.new("TextButton", Frame)
-ToggleButton.Size = UDim2.new(1, -20, 0, 35)
-ToggleButton.Text = "Start Auto Fish"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
-ToggleButton.TextColor3 = Color3.new(1,1,1)
+-- Minimize Button
+local Minimize = Instance.new("TextButton", TitleBar)
+Minimize.Size = UDim2.new(0,30,0,30)
+Minimize.Position = UDim2.new(1,-35,0.5,-15)
+Minimize.Text = "-"
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 18
+Minimize.BackgroundColor3 = Color3.fromRGB(45,45,55)
+Minimize.TextColor3 = Color3.fromRGB(200,200,200)
+Minimize.BorderSizePixel = 0
 
-Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0,8)
+local MinCorner = Instance.new("UICorner", Minimize)
+MinCorner.CornerRadius = UDim.new(0,8)
 
-ToggleButton.MouseButton1Click:Connect(function()
+-- Container
+local Container = Instance.new("Frame", Main)
+Container.Position = UDim2.new(0,0,0,45)
+Container.Size = UDim2.new(1,0,1,-45)
+Container.BackgroundTransparency = 1
+
+-- Toggle Button
+local Toggle = Instance.new("TextButton", Container)
+Toggle.Size = UDim2.new(0.9,0,0,40)
+Toggle.Position = UDim2.new(0.05,0,0,20)
+Toggle.BackgroundColor3 = Color3.fromRGB(40,40,48)
+Toggle.Text = "Start Farming"
+Toggle.Font = Enum.Font.GothamMedium
+Toggle.TextSize = 14
+Toggle.TextColor3 = Color3.fromRGB(220,220,220)
+Toggle.BorderSizePixel = 0
+
+local ToggleCorner = Instance.new("UICorner", Toggle)
+ToggleCorner.CornerRadius = UDim.new(0,10)
+
+-- Dropdown Label
+local DropLabel = Instance.new("TextLabel", Container)
+DropLabel.Size = UDim2.new(0.9,0,0,20)
+DropLabel.Position = UDim2.new(0.05,0,0,80)
+DropLabel.Text = "Farm Target"
+DropLabel.Font = Enum.Font.Gotham
+DropLabel.TextSize = 13
+DropLabel.TextColor3 = Color3.fromRGB(180,180,180)
+DropLabel.BackgroundTransparency = 1
+DropLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Dropdown Button
+local Dropdown = Instance.new("TextButton", Container)
+Dropdown.Size = UDim2.new(0.9,0,0,35)
+Dropdown.Position = UDim2.new(0.05,0,0,105)
+Dropdown.BackgroundColor3 = Color3.fromRGB(40,40,48)
+Dropdown.Text = Flags.Farm
+Dropdown.Font = Enum.Font.Gotham
+Dropdown.TextSize = 14
+Dropdown.TextColor3 = Color3.fromRGB(220,220,220)
+Dropdown.BorderSizePixel = 0
+
+local DropCorner = Instance.new("UICorner", Dropdown)
+DropCorner.CornerRadius = UDim.new(0,10)
+
+-- ================= UI LOGIC =================
+
+Toggle.MouseButton1Click:Connect(function()
     Running = not Running
-    ToggleButton.Text = Running and "Stop Auto Fish" or "Start Auto Fish"
+    
+    if Running then
+        Toggle.Text = "Stop Farming"
+        Toggle.BackgroundColor3 = Color3.fromRGB(70,130,255)
+    else
+        Toggle.Text = "Start Farming"
+        Toggle.BackgroundColor3 = Color3.fromRGB(40,40,48)
+    end
 end)
 
--- DROPDOWN BUTTON
-local DropdownButton = Instance.new("TextButton", Frame)
-DropdownButton.Size = UDim2.new(1, -20, 0, 35)
-DropdownButton.Text = "Farm: " .. Flags.Farm .. " ▼"
-DropdownButton.BackgroundColor3 = Color3.fromRGB(45,45,45)
-DropdownButton.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", DropdownButton).CornerRadius = UDim.new(0,8)
+Dropdown.MouseButton1Click:Connect(function()
+    if Flags.Farm == "Self" then
+        Flags.Farm = "Galaxy1"
+    else
+        Flags.Farm = "Self"
+    end
+    Dropdown.Text = Flags.Farm
+end)
 
--- SCROLL FRAME
-local ScrollFrame = Instance.new("ScrollingFrame", Frame)
-ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
-ScrollFrame.CanvasSize = UDim2.new(0,0,0,0)
-ScrollFrame.ScrollBarThickness = 5
-ScrollFrame.Visible = false
-ScrollFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
-Instance.new("UICorner", ScrollFrame).CornerRadius = UDim.new(0,8)
-
-local ListLayout = Instance.new("UIListLayout", ScrollFrame)
-ListLayout.Padding = UDim.new(0,5)
-
-local Options = {
-    "Self",
-    "Milky Way",
-    "Andromeda",
-    "Centaurus A",
-    "Hoag's Object",
-    "Negative Galaxy",
-    "The Eye"
-}
-
-for _, name in ipairs(Options) do
-    local OptionBtn = Instance.new("TextButton")
-    OptionBtn.Size = UDim2.new(1, -10, 0, 30)
-    OptionBtn.Text = name
-    OptionBtn.BackgroundColor3 = Color3.fromRGB(55,55,55)
-    OptionBtn.TextColor3 = Color3.new(1,1,1)
-    OptionBtn.Parent = ScrollFrame
-    Instance.new("UICorner", OptionBtn).CornerRadius = UDim.new(0,6)
-
-    OptionBtn.MouseButton1Click:Connect(function()
-        Flags.Farm = name
-        DropdownButton.Text = "Farm: " .. name .. " ▼"
-        ScrollFrame.Visible = false
-        ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
-    end)
-end
-
--- Auto resize scroll content
-ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    ScrollFrame.CanvasSize = UDim2.new(0,0,0,ListLayout.AbsoluteContentSize.Y + 10)
+Minimize.MouseButton1Click:Connect(function()
+    Container.Visible = not Container.Visible
+    Main.Size = Container.Visible and UDim2.new(0,320,0,220) or UDim2.new(0,320,0,45)
 end)
 
 -- Toggle dropdown
