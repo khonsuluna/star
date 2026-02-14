@@ -166,22 +166,119 @@ DropLabel.Text = "Farm Target"
 DropLabel.Font = Enum.Font.Gotham
 DropLabel.TextSize = 13
 DropLabel.TextColor3 = Color3.fromRGB(180,180,180)
-DropLabel.BackgroundTransparency = 1
-DropLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- ================= COMPACT CLEAN UI =================
 
--- Dropdown Button
-local Dropdown = Instance.new("TextButton", Container)
-Dropdown.Size = UDim2.new(0.9,0,0,35)
-Dropdown.Position = UDim2.new(0.05,0,0,105)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "AutoFishUI"
+
+local Main = Instance.new("Frame")
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 260, 0, 170)
+Main.Position = UDim2.new(0.5, -130, 0.5, -85)
+Main.BackgroundColor3 = Color3.fromRGB(25,25,30)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,10)
+Instance.new("UIStroke", Main).Color = Color3.fromRGB(55,55,65)
+
+-- Title
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1,0,0,35)
+Title.BackgroundColor3 = Color3.fromRGB(30,30,36)
+Title.Text = "Auto Fish"
+Title.Font = Enum.Font.GothamSemibold
+Title.TextSize = 15
+Title.TextColor3 = Color3.fromRGB(220,220,220)
+Title.BorderSizePixel = 0
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0,10)
+
+-- Toggle
+local Toggle = Instance.new("TextButton", Main)
+Toggle.Size = UDim2.new(0.9,0,0,32)
+Toggle.Position = UDim2.new(0.05,0,0,45)
+Toggle.BackgroundColor3 = Color3.fromRGB(40,40,48)
+Toggle.Text = "Start"
+Toggle.Font = Enum.Font.GothamMedium
+Toggle.TextSize = 13
+Toggle.TextColor3 = Color3.fromRGB(220,220,220)
+Toggle.BorderSizePixel = 0
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0,8)
+
+-- Dropdown Main Button
+local Dropdown = Instance.new("TextButton", Main)
+Dropdown.Size = UDim2.new(0.9,0,0,30)
+Dropdown.Position = UDim2.new(0.05,0,0,90)
 Dropdown.BackgroundColor3 = Color3.fromRGB(40,40,48)
 Dropdown.Text = Flags.Farm
 Dropdown.Font = Enum.Font.Gotham
-Dropdown.TextSize = 14
+Dropdown.TextSize = 13
 Dropdown.TextColor3 = Color3.fromRGB(220,220,220)
 Dropdown.BorderSizePixel = 0
+Instance.new("UICorner", Dropdown).CornerRadius = UDim.new(0,8)
 
-local DropCorner = Instance.new("UICorner", Dropdown)
-DropCorner.CornerRadius = UDim.new(0,10)
+-- Dropdown List Container
+local DropFrame = Instance.new("Frame", Main)
+DropFrame.Size = UDim2.new(0.9,0,0,70)
+DropFrame.Position = UDim2.new(0.05,0,0,125)
+DropFrame.BackgroundColor3 = Color3.fromRGB(32,32,38)
+DropFrame.Visible = false
+DropFrame.BorderSizePixel = 0
+Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0,8)
+
+local Scroll = Instance.new("ScrollingFrame", DropFrame)
+Scroll.Size = UDim2.new(1,0,1,0)
+Scroll.CanvasSize = UDim2.new(0,0,0,0)
+Scroll.ScrollBarThickness = 4
+Scroll.BackgroundTransparency = 1
+
+local Layout = Instance.new("UIListLayout", Scroll)
+Layout.Padding = UDim.new(0,4)
+
+-- ================= FUNCTIONS =================
+
+local function RefreshDropdown()
+    for _,v in pairs(Scroll:GetChildren()) do
+        if v:IsA("TextButton") then
+            v:Destroy()
+        end
+    end
+    
+    local Options = {"Self"}
+    
+    if workspace:FindFirstChild("Galaxies") then
+        for _,Galaxy in pairs(workspace.Galaxies:GetChildren()) do
+            table.insert(Options, Galaxy.Name)
+        end
+    end
+    
+    for _,Name in pairs(Options) do
+        local Option = Instance.new("TextButton")
+        Option.Size = UDim2.new(1,-6,0,25)
+        Option.BackgroundColor3 = Color3.fromRGB(45,45,55)
+        Option.Text = Name
+        Option.Font = Enum.Font.Gotham
+        Option.TextSize = 12
+        Option.TextColor3 = Color3.fromRGB(220,220,220)
+        Option.BorderSizePixel = 0
+        Instance.new("UICorner", Option).CornerRadius = UDim.new(0,6)
+        
+        Option.Parent = Scroll
+        
+        Option.MouseButton1Click:Connect(function()
+            Flags.Farm = Name
+            Dropdown.Text = Name
+            DropFrame.Visible = false
+        end)
+    end
+    
+    task.wait()
+    Scroll.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y + 4)
+end
+
+RefreshDropdown()
 
 -- ================= UI LOGIC =================
 
@@ -189,50 +286,14 @@ Toggle.MouseButton1Click:Connect(function()
     Running = not Running
     
     if Running then
-        Toggle.Text = "Stop Farming"
+        Toggle.Text = "Stop"
         Toggle.BackgroundColor3 = Color3.fromRGB(70,130,255)
     else
-        Toggle.Text = "Start Farming"
+        Toggle.Text = "Start"
         Toggle.BackgroundColor3 = Color3.fromRGB(40,40,48)
     end
 end)
 
 Dropdown.MouseButton1Click:Connect(function()
-    if Flags.Farm == "Self" then
-        Flags.Farm = "Galaxy1"
-    else
-        Flags.Farm = "Self"
-    end
-    Dropdown.Text = Flags.Farm
-end)
-
-Minimize.MouseButton1Click:Connect(function()
-    Container.Visible = not Container.Visible
-    Main.Size = Container.Visible and UDim2.new(0,320,0,220) or UDim2.new(0,320,0,45)
-end)
-
--- Toggle dropdown
-DropdownButton.MouseButton1Click:Connect(function()
-    ScrollFrame.Visible = not ScrollFrame.Visible
-    if ScrollFrame.Visible then
-        ScrollFrame.Size = UDim2.new(1, -20, 0, 120)
-    else
-        ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
-    end
-end)
-
--- Close Button
-local Close = Instance.new("TextButton", Frame)
-Close.Size = UDim2.new(1, -20, 0, 30)
-Close.Text = "Close & Stop"
-Close.BackgroundColor3 = Color3.fromRGB(120,40,40)
-Close.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", Close).CornerRadius = UDim.new(0,8)
-
-Close.MouseButton1Click:Connect(function()
-    Running = false
-    ScreenGui:Destroy()
-    for _, connection in ipairs(Connections) do
-        connection:Disconnect()
-    end
+    DropFrame.Visible = not DropFrame.Visible
 end)
