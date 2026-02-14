@@ -1,0 +1,205 @@
+-- Auto Fish With UI (Dropdown + Toggle + Drag + Minimize)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+
+local Client = Players.LocalPlayer
+
+-- ================= SETTINGS =================
+local Flags = {
+    Farm = "Self"
+}
+
+local Running = false
+local Connections = {}
+
+-- ================= FUNCTIONS =================
+
+local function GetRoot(Character)
+    return Character and Character:FindFirstChild("HumanoidRootPart")
+end
+
+local function GetHumanoid(Character)
+    return Character and Character:FindFirstChild("Humanoid")
+end
+
+local function Cast()
+    local Character = Client.Character
+    if not Character then return end
+
+    local Humanoid = GetHumanoid(Character)
+    local Root = GetRoot(Character)
+    if not Root then return end
+
+    local Rod = Character:FindFirstChild("Rod")
+    if not Rod then return end
+
+    local Farming = Flags.Farm == "Self"
+        and Root
+        or workspace:FindFirstChild("Galaxies")
+        and workspace.Galaxies:FindFirstChild(Flags.Farm)
+        or Root
+
+    local FarmPos = Farming:GetPivot().Position + Vector3.new(0, 5, 0)
+    local FarmLook = Farming:GetPivot().LookVector
+
+    ReplicatedStorage.Events.Global.Cast:FireServer(
+        Humanoid,
+        FarmPos,
+        FarmLook,
+        Rod.Model.Nodes.RodTip.Attachment
+    )
+
+    ReplicatedStorage.Events.Global.WithdrawBobber:FireServer(Humanoid)
+end
+
+-- Auto Confirm Items
+local ClientRecieveItems = ReplicatedStorage.Events.Global.ClientRecieveItems
+table.insert(Connections,
+    ClientRecieveItems.OnClientEvent:Connect(function(...)
+        local Data = {...}
+        local Info = Data[4] or {}
+        local TimingTbl = Data[6] or {}
+
+        for Index, StarData in pairs(Info) do
+            local Id = StarData["id"]
+            if Id then
+                task.wait(TimingTbl[Index] or 3)
+                ReplicatedStorage.Events.Global.ClientItemConfirm:FireServer(Id)
+            end
+        end
+    end)
+)
+
+-- ================= LOOP =================
+
+task.spawn(function()
+    while true do
+        if Running then
+            Cast()
+        end
+        task.wait(0.7) -- safer delay
+    end
+end)
+
+-- ================= GUI CLEAN DROPDOWN =================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoFishUI"
+ScreenGui.Parent = Client:WaitForChild("PlayerGui")
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 260, 0, 160)
+Frame.Position = UDim2.new(0, 40, 0, 120)
+Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+local Corner = Instance.new("UICorner", Frame)
+Corner.CornerRadius = UDim.new(0,12)
+
+local UIListLayout = Instance.new("UIListLayout", Frame)
+UIListLayout.Padding = UDim.new(0,8)
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Title
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, -20, 0, 30)
+Title.Text = "Auto Fish"
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextSize = 18
+
+-- Start/Stop Button
+local ToggleButton = Instance.new("TextButton", Frame)
+ToggleButton.Size = UDim2.new(1, -20, 0, 35)
+ToggleButton.Text = "Start Auto Fish"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(60,60,60)
+ToggleButton.TextColor3 = Color3.new(1,1,1)
+
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0,8)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    Running = not Running
+    ToggleButton.Text = Running and "Stop Auto Fish" or "Start Auto Fish"
+end)
+
+-- DROPDOWN BUTTON
+local DropdownButton = Instance.new("TextButton", Frame)
+DropdownButton.Size = UDim2.new(1, -20, 0, 35)
+DropdownButton.Text = "Farm: " .. Flags.Farm .. " ▼"
+DropdownButton.BackgroundColor3 = Color3.fromRGB(45,45,45)
+DropdownButton.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", DropdownButton).CornerRadius = UDim.new(0,8)
+
+-- SCROLL FRAME
+local ScrollFrame = Instance.new("ScrollingFrame", Frame)
+ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
+ScrollFrame.CanvasSize = UDim2.new(0,0,0,0)
+ScrollFrame.ScrollBarThickness = 5
+ScrollFrame.Visible = false
+ScrollFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Instance.new("UICorner", ScrollFrame).CornerRadius = UDim.new(0,8)
+
+local ListLayout = Instance.new("UIListLayout", ScrollFrame)
+ListLayout.Padding = UDim.new(0,5)
+
+local Options = {
+    "Self",
+    "Milky Way",
+    "Andromeda",
+    "Centaurus A",
+    "Hoag's Object",
+    "Negative Galaxy",
+    "The Eye"
+}
+
+for _, name in ipairs(Options) do
+    local OptionBtn = Instance.new("TextButton")
+    OptionBtn.Size = UDim2.new(1, -10, 0, 30)
+    OptionBtn.Text = name
+    OptionBtn.BackgroundColor3 = Color3.fromRGB(55,55,55)
+    OptionBtn.TextColor3 = Color3.new(1,1,1)
+    OptionBtn.Parent = ScrollFrame
+    Instance.new("UICorner", OptionBtn).CornerRadius = UDim.new(0,6)
+
+    OptionBtn.MouseButton1Click:Connect(function()
+        Flags.Farm = name
+        DropdownButton.Text = "Farm: " .. name .. " ▼"
+        ScrollFrame.Visible = false
+        ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
+    end)
+end
+
+-- Auto resize scroll content
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ScrollFrame.CanvasSize = UDim2.new(0,0,0,ListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- Toggle dropdown
+DropdownButton.MouseButton1Click:Connect(function()
+    ScrollFrame.Visible = not ScrollFrame.Visible
+    if ScrollFrame.Visible then
+        ScrollFrame.Size = UDim2.new(1, -20, 0, 120)
+    else
+        ScrollFrame.Size = UDim2.new(1, -20, 0, 0)
+    end
+end)
+
+-- Close Button
+local Close = Instance.new("TextButton", Frame)
+Close.Size = UDim2.new(1, -20, 0, 30)
+Close.Text = "Close & Stop"
+Close.BackgroundColor3 = Color3.fromRGB(120,40,40)
+Close.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0,8)
+
+Close.MouseButton1Click:Connect(function()
+    Running = false
+    ScreenGui:Destroy()
+    for _, connection in ipairs(Connections) do
+        connection:Disconnect()
+    end
+end)
