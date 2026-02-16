@@ -8,7 +8,7 @@ local Client = Players.LocalPlayer
 
 -- ================= SETTINGS =================
 local TargetNames = {
-    ["2i Borisov"] = true,
+    ["Antares"] = true,
     ["3i ATLAS"] = true,
     ["Supernove"] = true,
 ["Prismatic Star"] = true
