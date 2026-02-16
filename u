@@ -5,7 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 
 local Client = Players.LocalPlayer
-
+local Busy = false
 -- ================= SETTINGS =================
 local TargetNames = {
     ["Antares"] = true,
@@ -74,42 +74,44 @@ local ClientRecieveItems = ReplicatedStorage.Events.Global.ClientRecieveItems
 
 ClientRecieveItems.OnClientEvent:Connect(function(...)
     if not Running then return end
+    if Busy then return end
+    Busy = true
 
     local Data = {...}
-    local Info = Data[4] or {}
+    local Info = Data[4]
 
     local FoundTarget = false
 
-    for _, StarData in pairs(Info) do
-        local Name = StarData.name
+    if typeof(Info) == "table" then
+        for _, StarData in pairs(Info) do
+    if typeof(StarData) == "table" and StarData.name then
         
-        if Name and TargetNames[Name] then
+        -- TRIM spasi depan & belakang
+        local Name = string.gsub(StarData.name, "^%s*(.-)%s*$", "%1")
+
+        print("CHECKING:", "["..Name.."]")
+
+        if TargetNames[Name] then
+            print("TARGET MATCH:", Name)
             FoundTarget = true
             break
         end
     end
+end
+    end
 
     if FoundTarget then
-    Withdraw()
-    
-    -- tunggu sampai withdraw selesai
-    task.wait(0.6)
-    
-    if Running then
+        print("TARGET FOUND -> WITHDRAW")
+        Withdraw()
+        task.wait(0.8) -- kasih waktu anim selesai
+    else
+        print("NO TARGET -> RECAST")
+        task.wait(0.3)
         CastOnly()
     end
-    
-    return
-end
 
--- kalau tidak ketemu target, baru recast
-task.wait(0.2)
-
-if Running then
-    CastOnly()
-end
+    Busy = false
 end)
-
 -- ================= LOOP =================
 
 
