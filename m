@@ -90,16 +90,24 @@ ClientRecieveItems.OnClientEvent:Connect(function(...)
     end
 
     if FoundTarget then
-        Withdraw()
-    end
-
-    -- kecil delay biar ga terlalu robotic
-    task.wait(math.random(8,15)/100)
-
+    Withdraw()
+    
+    -- tunggu sampai withdraw selesai
+    task.wait(0.6)
+    
     if Running then
         CastOnly()
     end
-end)
+    
+    return
+end
+
+-- kalau tidak ketemu target, baru recast
+task.wait(0.2)
+
+if Running then
+    CastOnly()
+end
 
 -- ================= LOOP =================
 
