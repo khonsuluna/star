@@ -108,6 +108,7 @@ task.wait(0.2)
 if Running then
     CastOnly()
 end
+end)
 
 -- ================= LOOP =================
 
