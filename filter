@@ -8,9 +8,10 @@ local Client = Players.LocalPlayer
 
 -- ================= SETTINGS =================
 local TargetNames = {
-    ["Blazar Core"] = true,
-    ["Red Supergiant"] = true,
-    ["Collapsar"] = true
+    ["2i Borisov"] = true,
+    ["3i ATLAS"] = true,
+    ["Supernove"] = true,
+["Prismatic Star"] = true
 }
 
 local Flags = {
